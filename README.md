@@ -89,4 +89,9 @@ src/lib/               database, session, roles, ingestion and alerting, queries
 src/app/(app)/         authenticated pages
 src/app/api/           health, ingestion and CSV export endpoints
 tests/                 unit tests (node --test)
+devices/               pilot station firmware (ESP32) and a test sender
 ```
+
+## Pilot
+
+The pilot focuses on one feature: soil moisture monitoring with alerts. The plan and checklist are in [`docs/pilot-soil-moisture.md`](docs/pilot-soil-moisture.md). The station hardware, wiring and firmware are in [`devices/esp32-soil-moisture`](devices/esp32-soil-moisture/README.md). To test without hardware, run `python3 devices/emulator/send_test_readings.py --url <platform-url> --key <device-key>`.
