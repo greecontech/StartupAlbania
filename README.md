@@ -39,7 +39,7 @@ This repository is the working base of the platform described in the project's t
    | `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | The first administrator, created on first start |
    | `SEED_DEMO` | `true` for demo sites with 30 days of history (optional) |
    | `SIMULATOR` | `true` for live simulated readings every 60 s (optional) |
-   | `PROJECT_START_DATE` | `2026-09-01` |
+   | `PROJECT_START_DATE` | `2026-08-01` (project month 1 = August 2026) |
 
 4. **Get a URL.** Under **Settings → Networking → Generate Domain**, create a public URL. A custom domain such as `platform.greecon.earth` can be added in the same place.
 5. **Deploy and sign in.** Deploy, then sign in with the admin account and change the password under **Account**.
@@ -89,4 +89,9 @@ src/lib/               database, session, roles, ingestion and alerting, queries
 src/app/(app)/         authenticated pages
 src/app/api/           health, ingestion and CSV export endpoints
 tests/                 unit tests (node --test)
+devices/               pilot station firmware (ESP32) and a test sender
 ```
+
+## Pilot
+
+The pilot focuses on one feature: soil moisture monitoring with alerts. The plan and checklist are in [`docs/pilot-soil-moisture.md`](docs/pilot-soil-moisture.md). The station hardware, wiring and firmware are in [`devices/esp32-soil-moisture`](devices/esp32-soil-moisture/README.md). To test without hardware, run `python3 devices/emulator/send_test_readings.py --url <platform-url> --key <device-key>`.

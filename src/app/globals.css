@@ -167,6 +167,8 @@ th.num, td.num { text-align: right; }
 .gantt .bar { height: 14px; border-radius: 3px; background: var(--pale); border: 1px solid var(--line-strong); }
 .gantt .bar.now { background: var(--green); border-color: var(--green); }
 .gantt th.now { color: var(--green); }
+.gantt .bar.done { background: var(--ink-2); border-color: var(--ink-2); }
+.gantt th.done { color: var(--ink-2); }
 .gantt tr.result td { background: var(--surface); font-weight: 500; }
 
 details.inline-edit summary { cursor: pointer; list-style: none; color: var(--ink-2); font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
