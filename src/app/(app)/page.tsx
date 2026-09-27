@@ -3,7 +3,7 @@ import { Sparkline } from "@/components/Charts";
 import { Badge, Empty, Kpi, Notice, PageHead, Panel } from "@/components/ui";
 import { one, query } from "@/lib/db";
 import { SECTOR_LABELS, fmtDateTime, fmtNumber, fmtRelative } from "@/lib/format";
-import { currentProjectMonth, monthLabel, PROJECT_MONTHS } from "@/lib/project";
+import { completedMonths, currentProjectMonth, monthLabel, PROJECT_MONTHS } from "@/lib/project";
 import { listMetrics, metricStatus, series } from "@/lib/queries";
 import { requireUser } from "@/lib/session";
 
@@ -39,6 +39,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     sites.get(m.site_id)!.metrics.push(m);
   }
   const month = currentProjectMonth(now);
+  const completed = await completedMonths();
 
   return (
     <div className="stack">
@@ -51,7 +52,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         <Kpi label="Readings · 24 h" value={fmtNumber(counts?.readings ?? 0, 0)} />
         <Kpi label="Open alerts" value={counts?.open ?? 0} sub={counts?.critical ? `${counts.critical} critical` : "none critical"} />
         {month >= 1 && month <= PROJECT_MONTHS && (
-          <Kpi label="Startup Albania" value={`Month ${month}`} unit={`/ ${PROJECT_MONTHS}`} sub={monthLabel(month)} />
+          <Kpi label="Startup Albania" value={`Month ${month}`} unit={`/ ${PROJECT_MONTHS}`} sub={`${monthLabel(month)} · ${completed} of ${PROJECT_MONTHS} months completed`} />
         )}
       </div>
 

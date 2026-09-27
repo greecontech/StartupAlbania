@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { audit } from "@/lib/audit";
-import { one } from "@/lib/db";
+import { one, query } from "@/lib/db";
 import { text, type FormState } from "@/lib/form-state";
 import { requireUser } from "@/lib/session";
 
@@ -22,4 +22,18 @@ export async function updateProjectItem(_: FormState, form: FormData): Promise<F
   await audit(user.id, "update", "project_item", id, { status, note });
   revalidatePath("/project");
   return { ok: `${item.code} updated.` };
+}
+
+export async function setCompletedMonths(_: FormState, form: FormData): Promise<FormState> {
+  const user = await requireUser("operator");
+  const months = Number(text(form, "months"));
+  if (!Number.isInteger(months) || months < 0 || months > 5) return { error: "Choose between 0 and 5 months." };
+  await query(
+    "insert into settings (key, value) values ('project_completed_months', $1) on conflict (key) do update set value = excluded.value",
+    [JSON.stringify(months)]
+  );
+  await audit(user.id, "update", "project", null, { completedMonths: months });
+  revalidatePath("/project");
+  revalidatePath("/");
+  return { ok: `${months} of 5 months marked as completed.` };
 }

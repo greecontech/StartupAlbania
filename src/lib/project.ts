@@ -1,8 +1,10 @@
+import { one } from "./db";
+
 // Startup Albania 2026 — 5-month implementation window (Aneksi 1).
 export const PROJECT_MONTHS = 5;
 
 export function projectStart() {
-  return new Date(process.env.PROJECT_START_DATE || "2026-09-01T00:00:00Z");
+  return new Date(process.env.PROJECT_START_DATE || "2026-08-01T00:00:00Z");
 }
 
 /** 1-based project month for `now`, 0 before start, >5 after the end. */
@@ -26,3 +28,10 @@ export const PHASES = [
   { month: 4, phase: "Testimi dhe përmirësimi", activities: "Testimi funksional dhe teknik; evidentimi i problematikave; korrigjime dhe optimizime", result: "Version i përmirësuar pas testimit" },
   { month: 5, phase: "Konsolidimi dhe përgatitja për pilotim", activities: "Konsolidimi i funksionaliteteve; testimi përfundimtar i kësaj faze; përgatitja për demonstrim dhe pilotim; dokumentimi", result: "Version funksional për demonstrim dhe pilotim" }
 ] as const;
+
+/** Months marked as completed on the Project plan page (settings: project_completed_months). */
+export async function completedMonths() {
+  const row = await one<{ value: number }>("select value from settings where key = 'project_completed_months'").catch(() => null);
+  const n = Number(row?.value ?? 0);
+  return Number.isInteger(n) ? Math.min(Math.max(n, 0), PROJECT_MONTHS) : 0;
+}

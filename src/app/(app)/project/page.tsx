@@ -1,11 +1,11 @@
 import { ActionForm } from "@/components/ActionForm";
 import { Badge, Kpi, PageHead, Panel } from "@/components/ui";
 import { query } from "@/lib/db";
-import { PHASES, PROJECT_MONTHS, currentProjectMonth, monthLabel, projectStart } from "@/lib/project";
+import { PHASES, PROJECT_MONTHS, completedMonths, currentProjectMonth, monthLabel, projectStart } from "@/lib/project";
 import { fmtDate } from "@/lib/format";
 import { atLeast } from "@/lib/roles";
 import { requireUser } from "@/lib/session";
-import { updateProjectItem } from "./actions";
+import { setCompletedMonths, updateProjectItem } from "./actions";
 
 export const metadata = { title: "Project plan" };
 
@@ -32,7 +32,7 @@ function StatusEditor({ item }: { item: Item }) {
 export default async function Project() {
   const user = await requireUser();
   const canEdit = atLeast(user.role, "operator");
-  const items = await query<Item>("select * from project_items order by sort");
+  const [items, completed] = await Promise.all([query<Item>("select * from project_items order by sort"), completedMonths()]);
   const month = currentProjectMonth();
   const months = Array.from({ length: PROJECT_MONTHS }, (_, i) => i + 1);
   const plan = items.filter((i) => i.kind !== "deliverable");
@@ -51,9 +51,23 @@ export default async function Project() {
       <div className="kpis">
         <Kpi label="Current month" value={month >= 1 && month <= PROJECT_MONTHS ? `Month ${month}` : month < 1 ? "Not started" : "Completed"}
           unit={month >= 1 && month <= PROJECT_MONTHS ? `/ ${PROJECT_MONTHS}` : undefined} sub={month >= 1 && month <= PROJECT_MONTHS ? monthLabel(month) : undefined} />
+        <Kpi label="Completed" value={`${completed} / ${PROJECT_MONTHS}`} unit="months"
+          sub={completed ? `through ${monthLabel(completed)}` : "none yet"} />
         <Kpi label="Implementation window" value={fmtDate(projectStart())} sub={`to ${fmtDate(end)}`} />
         <Kpi label="Deliverables" value={`${done} / ${deliverables.length}`} sub="completed" />
       </div>
+
+      {canEdit && (
+        <Panel title="Progress" meta="Mark how many project months are completed">
+          <ActionForm action={setCompletedMonths} submit="Save" resetOnSuccess={false} className="row">
+            <label style={{ minWidth: 220 }}>Completed months
+              <select name="months" defaultValue={String(completed)}>
+                {[0, ...months].map((m) => <option key={m} value={m}>{m === 0 ? "None" : `${m} of ${PROJECT_MONTHS} — through ${monthLabel(m)}`}</option>)}
+              </select>
+            </label>
+          </ActionForm>
+        </Panel>
+      )}
 
       {phase && (
         <Panel title={`Month ${phase.month} — ${phase.phase}`} meta="Focus of the current month (D1 §4)">
@@ -70,7 +84,7 @@ export default async function Project() {
             <thead>
               <tr>
                 <th>Activity</th>
-                {months.map((m) => <th key={m} className={`num ${m === month ? "now" : ""}`} style={{ textAlign: "center" }}>M{m}<div style={{ textTransform: "none", letterSpacing: 0 }}>{monthLabel(m)}</div></th>)}
+                {months.map((m) => <th key={m} className={`num ${m <= completed ? "done" : m === month ? "now" : ""}`} style={{ textAlign: "center" }}>M{m}{m <= completed ? " ✓" : ""}<div style={{ textTransform: "none", letterSpacing: 0 }}>{monthLabel(m)}</div></th>)}
                 <th>Status</th>{canEdit && <th />}
               </tr>
             </thead>
@@ -81,7 +95,7 @@ export default async function Project() {
                 <tr key={item.id}>
                   <td><span className="muted small">{item.code}</span> {item.title}{item.note && <div className="small muted">{item.note}</div>}</td>
                   {months.map((m) => (
-                    <td key={m} className="m">{item.months.includes(m) && <div className={`bar ${m === month ? "now" : ""}`} />}</td>
+                    <td key={m} className="m">{item.months.includes(m) && <div className={`bar ${m <= completed ? "done" : m === month ? "now" : ""}`} />}</td>
                   ))}
                   <td><Badge status={item.status} label={STATUS_LABELS[item.status]} /></td>
                   {canEdit && <td className="right"><StatusEditor item={item} /></td>}
@@ -118,7 +132,8 @@ export default async function Project() {
             <tbody>
               {PHASES.map((p) => (
                 <tr key={p.month} style={p.month === month ? { background: "rgba(68,133,97,0.08)" } : undefined}>
-                  <td style={{ whiteSpace: "nowrap" }}>Month {p.month}<div className="small muted">{monthLabel(p.month)}</div></td>
+                  <td style={{ whiteSpace: "nowrap" }}>Month {p.month}<div className="small muted">{monthLabel(p.month)}</div>
+                    {p.month <= completed && <Badge status="done" label="Completed" />}</td>
                   <td className="small">{p.activities}</td>
                   <td className="small">{p.result}</td>
                 </tr>

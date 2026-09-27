@@ -39,7 +39,7 @@ This repository is the working base of the platform described in the project's t
    | `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | The first administrator, created on first start |
    | `SEED_DEMO` | `true` for demo sites with 30 days of history (optional) |
    | `SIMULATOR` | `true` for live simulated readings every 60 s (optional) |
-   | `PROJECT_START_DATE` | `2026-09-01` |
+   | `PROJECT_START_DATE` | `2026-08-01` (project month 1 = August 2026) |
 
 4. **Get a URL.** Under **Settings → Networking → Generate Domain**, create a public URL. A custom domain such as `platform.greecon.earth` can be added in the same place.
 5. **Deploy and sign in.** Deploy, then sign in with the admin account and change the password under **Account**.
