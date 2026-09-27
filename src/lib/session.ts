@@ -1,4 +1,5 @@
 import "server-only";
+import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify } from "jose";
@@ -10,13 +11,21 @@ const MAX_AGE = 60 * 60 * 12; // 12 hours
 
 export type SessionUser = { id: string; email: string; name: string; role: Role };
 
+let fallbackSecret: Uint8Array | undefined;
+
+export function sessionSecretConfigured() {
+  return (process.env.SESSION_SECRET ?? "").length >= 32;
+}
+
 function secret() {
-  const value = process.env.SESSION_SECRET;
-  if (!value || value.length < 32) {
-    if (process.env.NODE_ENV === "production") throw new Error("SESSION_SECRET must be set (min 32 characters)");
-    return new TextEncoder().encode("dev-only-insecure-session-secret-change-me");
+  if (sessionSecretConfigured()) return new TextEncoder().encode(process.env.SESSION_SECRET);
+  // Without a configured secret, keep the platform usable with a per-process random key:
+  // sessions then end whenever the server restarts. Settings shows a warning until it is set.
+  if (!fallbackSecret) {
+    console.warn("[session] SESSION_SECRET is missing or shorter than 32 characters; using a temporary key.");
+    fallbackSecret = new Uint8Array(randomBytes(32));
   }
-  return new TextEncoder().encode(value);
+  return fallbackSecret;
 }
 
 export async function createSession(userId: string) {

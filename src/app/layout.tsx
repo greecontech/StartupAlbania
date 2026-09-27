@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "@fontsource/ibm-plex-serif/400.css";
 import "@fontsource/ibm-plex-serif/500.css";
+import "@fontsource/ibm-plex-serif/400-italic.css";
 import "./globals.css";
 
 export const metadata: Metadata = {

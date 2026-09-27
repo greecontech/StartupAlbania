@@ -4,7 +4,7 @@ import { Empty, PageHead, Panel } from "@/components/ui";
 import { one, query } from "@/lib/db";
 import { fmtDate, fmtDateTime, fmtNumber } from "@/lib/format";
 import { projectStart } from "@/lib/project";
-import { requireUser } from "@/lib/session";
+import { requireUser, sessionSecretConfigured } from "@/lib/session";
 import { saveSettings } from "./actions";
 
 export const metadata = { title: "Settings & audit" };
@@ -55,6 +55,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
               <tr><td className="muted">Demo simulator</td><td>{process.env.SIMULATOR === "true" ? `on, every ${process.env.SIMULATOR_INTERVAL_SECONDS || 60} s` : "off"}</td></tr>
               <tr><td className="muted">Timezone</td><td>{process.env.APP_TIMEZONE || "Europe/Tirane"}</td></tr>
               <tr><td className="muted">Project start</td><td>{fmtDate(projectStart())}</td></tr>
+              <tr><td className="muted">Session secret</td><td>{sessionSecretConfigured() ? "configured" : <span style={{ color: "var(--critical)" }}>not set — users are signed out on every restart. Set SESSION_SECRET (32+ characters).</span>}</td></tr>
               <tr><td className="muted">Deployment</td><td>{process.env.RAILWAY_ENVIRONMENT_NAME ? `Railway · ${process.env.RAILWAY_ENVIRONMENT_NAME}` : process.env.NODE_ENV}</td></tr>
             </tbody>
           </table>
